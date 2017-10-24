@@ -30,6 +30,20 @@ void processEvent_2(L1List<NinjaInfo_t>& nList){
 }
 
 void processEvent_3(L1List<NinjaInfo_t>& nList){
-	L1List<char[ID_MAX_LENGTH]>* ninjaid = new L1List<char[ID_MAX_LENGTH]>();
+	L1List<NinjaInfo_t> ninjaid;
+	L1Item<NinjaInfo_t>* pHead_id = ninjaid.getHead();// lay con tro head cua list id
+	L1Item<NinjaInfo_t>* temp = pHead_id;
+	L1Item<NinjaInfo_t>* pHead = nList.getHead();// lay con tro head cua list ninjainfo nList
+	unsigned int size;
+	while(pHead){
+		while(temp){
+			if(strcmp(pHead->data.id,temp->data.id) == 0) break;
+			temp = temp->pNext;
+		}
+		if(temp == NULL) ninjaid.push_back(pHead->data);
+		pHead = pHead->pNext;
+	}
+	size = ninjaid.getSize();
+	cout <<"3:"<<size<<endl;
 }
 
