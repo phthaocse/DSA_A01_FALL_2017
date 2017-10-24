@@ -157,8 +157,8 @@ template<class T>
 L1Item<T>* L1List<T>::getLast(){
 	if(_pHead == NULL) return 0;
 	L1Item<T>* p = _pHead;
-	while(p->next){
-		p = p ->next;
+	while(p->pNext){
+		p = p ->pNext;
 	}
 	return p;
 }

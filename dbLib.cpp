@@ -33,7 +33,7 @@ void    strPrintTime(char* des, time_t& t) {
 void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	// TODO: write code to load information from file into db
 	ifstream ifile;
-	ifile.open("fName");
+	ifile.open(fName);
 
 	string str;//luu cac phan khong can thiet
 	string str1, str2, str3, str4;
