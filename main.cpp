@@ -6,11 +6,7 @@
 
 using namespace std;
 
-/// NOTE: student must defined this function if they use dynamically allocated global data.
-/// If student do not use any dynamic global data, please define this function as empty function
-/// in your code (file processData.cpp) as follows
-/// void releaseNinjaGlobalData() {}
-void releaseNinjaGlobalData();
+
 
 /// This function displays the content of database
 void display(L1List<NinjaInfo_t>& nList) {
@@ -27,9 +23,7 @@ int main(int narg, char** argv) {
     cout << fixed << setprecision(12);// preset for floating point numbers
     /// Process events
     process(eventList, db);
-
     cout << resetiosflags(ios::showbase) << setprecision(-1);
-    /// Release any global allocaed data
-    releaseNinjaGlobalData();
+
     return 0;
 }

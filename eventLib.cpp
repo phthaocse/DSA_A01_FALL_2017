@@ -10,9 +10,26 @@
  */
 
 #include "eventLib.h"
-
+#include<string>
+#include<cstring>
 
 /// NOTE: each event will be separated by spaces, or endline character
 void loadEvents(char* fName, L1List<ninjaEvent_t> &eList) {
-	//TODO    
+	//TODO 
+	ifstream ifile;
+	ifile.open("fName");
+	ninjaEvent_t temp;
+	if(ifile.good())
+	{
+		string str;//luu cac phan khong can thiet
+		while(getline(ifile,str))
+		{
+			istringstream ss(str);
+			while( ss >> str){
+				strcpy((temp.code), str.c_str());
+				eList.push_back(temp);
+			}
+		}
+	}
+	ifile.close();
 }

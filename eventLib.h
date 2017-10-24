@@ -15,8 +15,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <string.h>
 #include <sstream>
+#include <cstring>
 
 #include "listLib.h"
 

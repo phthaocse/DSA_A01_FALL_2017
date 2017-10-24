@@ -17,6 +17,9 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <ctime>
+#include <cstdlib>
+
 #define pi 3.14159265358979323846
 #define earthRadiusKm 6371.0
 
@@ -29,7 +32,47 @@ void    strPrintTime(char* des, time_t& t) {
 
 void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	// TODO: write code to load information from file into db
+	ifstream ifile;
+	ifile.open("fName");
 
+	string str;//luu cac phan khong can thiet
+	string str1, str2, str3, str4;
+	NinjaInfo temp1;// luu du lieu ninja tam
+	getline(ifile, str);//lay dong dau cua file
+	while (!ifile.good())
+	{
+		getline(ifile, str, ',');
+		getline(ifile, str1, ',');
+		getline(ifile, str2, ',');
+		getline(ifile, str3, ',');
+		getline(ifile, str4, ',');
+		getline(ifile, str);
+		//doi string thanh time_t
+		char strtemp;
+		int hh, mm, ss, DD, MM, YYYY;// Luu tru ngay thang nam
+		// phan tach chuoi
+		stringstream input(str1);
+		input >> DD >> strtemp >> MM >> strtemp >> YYYY >> hh >> strtemp >> mm >> strtemp >> ss;
+
+		//gan vao tm
+		struct tm tm;
+		tm.tm_hour = hh;
+		tm.tm_min = mm;
+		tm.tm_sec = ss;
+		tm.tm_mday = DD;
+		tm.tm_mon = MM - 1;// mont [0,11] nen tru di 1
+		tm.tm_year = YYYY - 1900;
+		tm.tm_isdst = -1;// khong co gio mua he
+		temp1.timestamp = mktime(&tm);
+
+		strcpy(temp1.id,str2.c_str());// chuyen string thanh char
+		temp1.longitude = atof(str3.c_str());//chuyen string thanh char roi chuyen thanh double
+		temp1.latitude = atof(str4.c_str());
+		// push du lieu vao list db
+		db.push_back(temp1);
+	}
+
+	ifile.close();
 }
 
 bool parseNinjaInfo(char* pBuf, NinjaInfo_t& nInfo) {
@@ -39,12 +82,31 @@ bool parseNinjaInfo(char* pBuf, NinjaInfo_t& nInfo) {
 
 
 void process(L1List<ninjaEvent_t>& eventList, L1List<NinjaInfo_t>& bList) {
+	void*   pGData = NULL;
+	initNinjaGlobalData(&pGData);
+
+
     while (!eventList.isEmpty()) {
-        if(!processEvent(eventList[0], bList))
+    	if(!processEvent(eventList[0], bList, pGData))
             cout << eventList[0].code << " is an invalid event\n";
         eventList.removeHead();
     }
+
+    releaseNinjaGlobalData(pGData);
 }
+
+
+bool initNinjaGlobalData(void** pGData) {
+      /// TODO: You should define this function if you would like to use some extra data
+      /// the data should be allocated and pass the address into pGData
+      return true;
+  }
+
+void releaseNinjaGlobalData(void* pGData) {
+      /// TODO: You should define this function if you allocated extra data at initialization stage
+      /// The data pointed by pGData should be released
+  }
+
 
 void printNinjaInfo(NinjaInfo_t& b) {
     printf("%s: (%0.5f, %0.5f), %s\n", b.id, b.longitude, b.latitude, ctime(&b.timestamp));

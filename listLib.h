@@ -41,7 +41,7 @@ class L1List {
     size_t      _size;// number of elements in this list
 public:
     L1List() : _pHead(NULL), _size(0) {}
-    ~L1List();
+    ~L1List(){};
 
     void    clean();
     bool    isEmpty() {
@@ -50,6 +50,9 @@ public:
     size_t  getSize() {
         return _size;
     }
+
+    L1Item<T>* getHead(){return _pHead;} // get pHead
+    L1Item<T>* getLast();
 
     T&      at(int i);
     T&      operator[](int i);
@@ -150,5 +153,28 @@ int L1List<T>::removeLast() {
 }
 
 
+template<class T>
+L1Item<T>* L1List<T>::getLast(){
+	if(_pHead == NULL) return 0;
+	L1Item<T>* p = _pHead;
+	while(p->next){
+		p = p ->next;
+	}
+	return p;
+}
+
+
+template<class T>
+T& L1List<T>::operator [](int idx)
+{
+	//if(_pHead == NULL)
+	L1Item<T>* p = _pHead;
+	while(idx>0 &&p)
+	{
+		p = p->pNext;
+		idx--;
+	}
+	if(p) return p->data;
+}
 
 #endif //A01_LISTLIB_H
