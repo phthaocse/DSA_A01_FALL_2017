@@ -6,6 +6,7 @@
  */
 #include "eventLib.h"
 #include "dbLib.h"
+#define ID_MAX_LENGTH   10
 
 bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData)  {
     // TODO: Your code comes here
@@ -29,6 +30,6 @@ void processEvent_2(L1List<NinjaInfo_t>& nList){
 }
 
 void processEvent_3(L1List<NinjaInfo_t>& nList){
-
+	L1List<char[ID_MAX_LENGTH]>* ninjaid = new L1List<char[ID_MAX_LENGTH]>();
 }
 
