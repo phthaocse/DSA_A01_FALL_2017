@@ -7,12 +7,12 @@
 using namespace std;
 
 
-
 /// This function displays the content of database
 void display(L1List<NinjaInfo_t>& nList) {
     cout.flush();
     nList.traverse(printNinjaInfo);
 }
+
 
 int main(int narg, char** argv) {
 	const clock_t begin_time = clock();
@@ -24,9 +24,10 @@ int main(int narg, char** argv) {
 
     cout << fixed << setprecision(12);// preset for floating point numbers
 
-    cout << "chay dc trong: ";
-    std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC<<"s";
+    cout << "Runtime: ";
+    std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC<<"s" <<endl;
     /// Process events
+    //display(db);
     process(eventList, db);
 
     cout << resetiosflags(ios::showbase) << setprecision(-1);

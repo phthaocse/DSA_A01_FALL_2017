@@ -38,7 +38,7 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	string str1, str2, str3, str4;
 	NinjaInfo temp1;// luu du lieu ninja tam
 	getline(ifile, str);//lay dong dau cua file
-
+	//int i;
 	L1Item<NinjaInfo_t>* pLast= db.getHead();
 	while (!ifile.eof())
 	{
@@ -71,6 +71,7 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		temp1.latitude = atof(str4.c_str());
 		// push du lieu vao list db
 		pLast = db.pushBack(temp1,pLast);
+		//db.push_back(temp1);
 		//i++;
 		//if(i == 100000) break;
 	}

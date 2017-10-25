@@ -109,6 +109,7 @@ L1Item<T>* L1List<T>::pushBack(T& a,L1Item<T>* pLast){
 	if(pLast == NULL){
 		pLast = new L1Item<T>(a);
 		 _size++;
+		 _pHead = pLast;
 		 return pLast;
 	}
 	else{
@@ -202,8 +203,10 @@ L1List<T>* L1List<T>::copyList(){
 	L1Item<T>* temp = _pHead;
 	while(temp){
 		pLast = p->pushBack(temp->data,pLast);
+		//p->push_back(temp->data);
 		temp = temp->pNext;
 	}
+	return p;
 }
 
 
