@@ -60,8 +60,10 @@ public:
     bool    find(T& a, int& idx);
     int     insert(int i, T& a);
     int     remove(int i);
+    L1List<T>* copyList();
 
     int     push_back(T& a);
+    L1Item<T>* pushBack(T& a,L1Item<T>* pLast);//sau moi lan push se lay con tro last cho lan push ke tiep
     int     insertHead(T& a);
 
     int     removeHead();
@@ -101,6 +103,22 @@ int L1List<T>::push_back(T &a) {
     _size++;
     return 0;
 }
+
+template <class T>
+L1Item<T>* L1List<T>::pushBack(T& a,L1Item<T>* pLast){
+	if(pLast == NULL){
+		pLast = new L1Item<T>(a);
+		 _size++;
+		 return pLast;
+	}
+	else{
+		  L1Item<T> *p = pLast;
+		  p->pNext = new L1Item<T>(a);
+		  _size++;
+		  return p->pNext;
+	}
+}
+
 
 /// Insert item to the front of the list
 /// Return 0 if success
@@ -158,7 +176,7 @@ L1Item<T>* L1List<T>::getLast(){
 	if(_pHead == NULL) return 0;
 	L1Item<T>* p = _pHead;
 	while(p->pNext){
-		p = p ->pNext;
+		p = p->pNext;
 	}
 	return p;
 }
@@ -176,5 +194,18 @@ T& L1List<T>::operator [](int idx)
 	}
 	if(p) return p->data;
 }
+
+template<class T>
+L1List<T>* L1List<T>::copyList(){
+	L1List<T>* p = new L1List<T>();
+	L1Item<T>* pLast = p->getHead();
+	L1Item<T>* temp = _pHead;
+	while(temp){
+		pLast = p->pushBack(temp->data,pLast);
+		temp = temp->pNext;
+	}
+}
+
+
 
 #endif //A01_LISTLIB_H

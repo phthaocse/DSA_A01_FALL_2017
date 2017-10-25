@@ -18,6 +18,7 @@ void loadEvents(char* fName, L1List<ninjaEvent_t> &eList) {
 	//TODO 
 	ifstream ifile;
 	ifile.open(fName);
+
 	ninjaEvent_t temp;
 	if(ifile.good())
 	{

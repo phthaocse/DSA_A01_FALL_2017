@@ -34,12 +34,13 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	// TODO: write code to load information from file into db
 	ifstream ifile;
 	ifile.open(fName);
-
 	string str;//luu cac phan khong can thiet
 	string str1, str2, str3, str4;
 	NinjaInfo temp1;// luu du lieu ninja tam
 	getline(ifile, str);//lay dong dau cua file
-	while (!ifile.good())
+
+	L1Item<NinjaInfo_t>* pLast= db.getHead();
+	while (!ifile.eof())
 	{
 		getline(ifile, str, ',');
 		getline(ifile, str1, ',');
@@ -65,11 +66,13 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		tm.tm_isdst = -1;// khong co gio mua he
 		temp1.timestamp = mktime(&tm);
 
-		strcpy(temp1.id,str2.c_str());// chuyen string thanh char
+		strcpy(temp1.id,str2.c_str());
 		temp1.longitude = atof(str3.c_str());//chuyen string thanh char roi chuyen thanh double
 		temp1.latitude = atof(str4.c_str());
 		// push du lieu vao list db
-		db.push_back(temp1);
+		pLast = db.pushBack(temp1,pLast);
+		//i++;
+		//if(i == 100000) break;
 	}
 
 	ifile.close();
@@ -84,7 +87,8 @@ bool parseNinjaInfo(char* pBuf, NinjaInfo_t& nInfo) {
 void process(L1List<ninjaEvent_t>& eventList, L1List<NinjaInfo_t>& bList) {
 	void*   pGData = NULL;
 	initNinjaGlobalData(&pGData);
-
+	L1List<ninjaEvent_t>* temp = eventList.copyList();
+	pGData = temp;
 
     while (!eventList.isEmpty()) {
     	if(!processEvent(eventList[0], bList, pGData))
@@ -99,12 +103,12 @@ void process(L1List<ninjaEvent_t>& eventList, L1List<NinjaInfo_t>& bList) {
 bool initNinjaGlobalData(void** pGData) {
       /// TODO: You should define this function if you would like to use some extra data
       /// the data should be allocated and pass the address into pGData
-      return true;
   }
 
 void releaseNinjaGlobalData(void* pGData) {
       /// TODO: You should define this function if you allocated extra data at initialization stage
       /// The data pointed by pGData should be released
+	delete pGData;
   }
 
 
