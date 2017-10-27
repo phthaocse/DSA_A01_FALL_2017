@@ -24,13 +24,14 @@ int main(int narg, char** argv) {
 
     cout << fixed << setprecision(12);// preset for floating point numbers
 
-    cout << "Runtime: ";
-    std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC<<"s" <<endl;
+
+
     /// Process events
     //display(db);
     process(eventList, db);
 
     cout << resetiosflags(ios::showbase) << setprecision(-1);
-
+    cout << "Runtime: ";
+    std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC<<"s" <<endl;
     return 0;
 }
