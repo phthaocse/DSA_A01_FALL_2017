@@ -28,7 +28,7 @@ bool checkID(char* ID, L1List<NinjaID_t>& ninjaid){
 
 //get ID from events code
 char* getID(char* events){
-	char* id;
+	char* id = new char();
 	if(strlen(events) == 5){
 		for(int i = 0; i < 4; i++){
 			id[i] = events[i+1];
@@ -98,8 +98,8 @@ void processEvent_4(L1List<NinjaID_t>& ninjaid){
 	cout <<"4: "<<max<<endl;
 }
 
-void processEvent_5(L1List<NinjaInfo_t>& nList,char* ID){
-
+void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
+	char *ID = getID(eventcode);
 	L1Item<NinjaInfo_t>* pInfo1;
 	findID(nList.getHead(),ID,pInfo1);// lay con tro khi phat hien ID lan dau
 	L1Item<NinjaInfo_t>* pInfo2;
@@ -111,10 +111,10 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* ID){
 	{
 		if(!checkDistance(pInfo1->data.latitude,pInfo1->data.latitude,pInfo2->data.latitude,pInfo2->data.latitude))
 		{
-			if(!findID(pInfo2->pNext,ID,pInfo2)){b = false;}
+			if(!findID(pInfo2->pNext,ID,pInfo2)){cout << "Ninja khong di chuyen";b = false;}
 		}
 		else{
-			char* time;
+			char* time = new char();
 			cout << "5: ";
 			strPrintTime(time,pInfo2->data.timestamp);
 			cout << time << endl;
@@ -159,6 +159,7 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 
 	int i;
 	char s[2];
+
 	if(strlen(event.code) == 1 || strlen(event.code) == 5){
 		strncpy(s,event.code,1);
 		i = atoi(s);
@@ -171,7 +172,7 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		strncpy(s,event.code,2);
 		i = atoi(s);
 	}
-	char* id = getID(event.code);
+
 
 	//Xu ly events
 	switch(i){
@@ -186,8 +187,11 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 	case 4:
 		processEvent_4(ninjaid); break;
 	case 5:
-		if(!checkID(id,ninjaid)) cout << "-1" <<endl;
-		else processEvent_5(nList,id); break;
+		//char* id = getID(event.code);
+		if(!checkID(getID(event.code),ninjaid)) cout << "-1" <<endl;
+		else{
+			processEvent_5(nList,event.code); break;
+		}
 	}
 
 	//
