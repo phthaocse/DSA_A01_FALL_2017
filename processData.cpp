@@ -258,6 +258,48 @@ void processEvent_8(L1List<NinjaInfo_t>& nList,char* eventcode){
 	char *ID = getID(eventcode);
 	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
 	L1Item<NinjaInfo_t>* pInfo = ListID.getHead();
+	double distance = 0;
+	while(pInfo->pNext){
+		distance +=distanceEarth(pInfo->data.latitude,pInfo->data.longitude,pInfo->pNext->data.latitude,pInfo->pNext->data.longitude);
+		pInfo = pInfo->pNext;
+	}
+
+	cout << "8: " << distance <<endl;
+}
+void processEvent_9(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
+	L1Item<NinjaID_t>* pID = ninjaid.getHead();
+	double max_dis = 0;
+	L1List<NinjaInfo_t> maxList; // tao list luu tru cac khoang cach max
+	while(pID){
+		L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
+		L1Item<NinjaInfo_t>* pInfo = ListID.getHead();
+		double distance = 0;
+		while(pInfo->pNext){
+			distance +=distanceEarth(pInfo->data.latitude,pInfo->data.longitude,pInfo->pNext->data.latitude,pInfo->pNext->data.longitude);
+			pInfo = pInfo->pNext;
+		}
+		if(distance > max_dis){
+			max_dis = distance;
+			if(maxList.getHead() != NULL) maxList.removeHead();//xoa max lan trc
+			maxList.push_back(ListID.getHead()->data);
+		}
+		else if(distance == max_dis) maxList.push_back(ListID.getHead()->data);//neu bang nhau se van push de so sanh thoi gian
+		pID = pID->pNext;
+	}
+	//tim max
+	L1Item<NinjaInfo_t>* pML = maxList.getHead();
+	L1Item<NinjaInfo_t>* pMax = pML;//luu node chua ID co quang duong dai nhat
+	pMax->data.timestamp;
+
+	while(pML->pNext){
+		if(difftime(pMax->data.timestamp,pML->pNext->data.timestamp) < 0){ //end/beginning
+			pMax = pML->pNext;
+		}
+		pML = pML->pNext;
+	}
+
+	cout << "9: " << pMax->data.id <<endl;
+
 }
 
 bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData)  {
@@ -338,6 +380,13 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		else{
 			processEvent_7(nList,event.code);
 		}break;
+	case 8:
+		if(!checkID(getID(event.code),ninjaid)) cout << "-1" <<endl;
+		else{
+			processEvent_8(nList,event.code);
+		}break;
+	case 9:
+			processEvent_9(nList,ninjaid);break;
 	}
 
 	//
