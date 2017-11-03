@@ -7,6 +7,7 @@
 #include "eventLib.h"
 #include "dbLib.h"
 #include<cstdlib>
+#include<cmath>
 #define ID_MAX_LENGTH   10
 
 typedef struct NinjaID{
@@ -29,17 +30,23 @@ bool checkID(char* ID, L1List<NinjaID_t>& ninjaid){
 //get ID from events code
 char* getID(char* events){
 	char* id = new char();
-	if(strlen(events) == 5){
-		for(int i = 0; i < 4; i++){
-			id[i] = events[i+1];
+	char* tmp = new char();
+	strncpy(tmp,events,2);// lay 2 ky tu dau cua eventcode
+	tmp[2] = '\0';
+
+	if(strcmp(tmp,"11") == 0){
+		for(int i = 0; i < strlen(events)-2; i++){
+			id[i] = events[i+2];
+			id[strlen(events)-2] = '\0';
 		}
 	}
 	else{
-		for(int i = 0; i < 4; i++){
-			id[i] = events[i+2];
+		for(int i = 0; i < strlen(events)-1; i++){
+			id[i] = events[i+1];
+			id[strlen(events)-1] = '\0';
 		}
 	}
-	id[4] = '\0';
+
 	return id;
 }
 
@@ -47,6 +54,28 @@ char* getID(char* events){
 bool checkDistance(double lat1d, double lon1d, double lat2d, double lon2d){
 	if((distanceEarth(lat1d, lon1d, lat2d,  lon2d)*1000)>5)return true; // don vi km->m
 	else return false;
+}
+
+bool checkEvent(char* events, char*& result) {
+	char** chr = new char*[6]{ "5","6","7","8","11","13" };
+	for (int i = 0; i<4; i++) {
+		char* tmp = new char();
+		tmp[1] = '\0';
+		strncpy(tmp, events,1);
+		if (strcmp(tmp, chr[i]) == 0) {
+			result = tmp;
+			return true;
+		}
+	}
+	for (int j = 4; j<6; j++) {
+		char* tmp = new char();
+		strncpy(tmp, events, 2);
+		tmp[2] = '\0';
+		if (strcmp(tmp, chr[j]) == 0) {
+			result = tmp; return true;
+		}
+	}
+	return false;
 }
 
 bool findID(L1Item<NinjaInfo_t>* nListHead, char* id,L1Item<NinjaInfo_t>*& pResult){
@@ -289,7 +318,7 @@ void processEvent_9(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
 	//tim max
 	L1Item<NinjaInfo_t>* pML = maxList.getHead();
 	L1Item<NinjaInfo_t>* pMax = pML;//luu node chua ID co quang duong dai nhat
-	pMax->data.timestamp;
+
 
 	while(pML->pNext){
 		if(difftime(pMax->data.timestamp,pML->pNext->data.timestamp) < 0){ //end/beginning
@@ -299,6 +328,42 @@ void processEvent_9(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
 	}
 
 	cout << "9: " << pMax->data.id <<endl;
+
+}
+
+void processEvent_10(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
+	L1Item<NinjaID_t>* pID = ninjaid.getHead();
+	double max_time = 0;
+	L1List<NinjaInfo_t> maxList; // tao list luu tru cac thoi gian max
+	while(pID){
+		L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
+		L1Item<NinjaInfo_t>* pInfo = ListID.getHead();
+		double time = 0;
+		while(pInfo->pNext){
+			time += fabs(difftime(pInfo->pNext->data.timestamp,pInfo->data.timestamp));
+			pInfo = pInfo->pNext;
+		}
+		if(time > max_time){
+			max_time = time;
+			if(maxList.getHead() != NULL) maxList.removeHead();//xoa max lan trc
+			maxList.push_back(ListID.getHead()->data);
+		}
+		else if(time  == max_time) maxList.push_back(ListID.getHead()->data);//neu bang nhau se van push de so sanh thoi gian
+		pID = pID->pNext;
+	}
+	//tim max
+	L1Item<NinjaInfo_t>* pML = maxList.getHead();
+	L1Item<NinjaInfo_t>* pMax = pML;//luu node chua ID co thoi gian lau nhat
+
+
+	while(pML->pNext){
+		if(difftime(pMax->data.timestamp,pML->pNext->data.timestamp) < 0){ //end/beginning
+			pMax = pML->pNext;
+		}
+		pML = pML->pNext;
+	}
+
+	cout << "10: " << pMax->data.id <<endl;
 
 }
 
@@ -336,21 +401,21 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 	}
 
 	int i;
-	char s[2];
+	char* s = new char[2];
 
-	if(strlen(event.code) == 1 || strlen(event.code) == 5){
+	if(strlen(event.code) == 1){
 		strncpy(s,event.code,1);
 		i = atoi(s);
 	}
-	else if(strlen(event.code) == 2 || strlen(event.code) == 6){
+	else if(strlen(event.code) == 2){
 		strncpy(s,event.code,2);
 		i = atoi(s);
 	}
 	else{
-		strncpy(s,event.code,2);
+		checkEvent(event.code,s);
 		i = atoi(s);
 	}
-
+	delete s; s = NULL;
 
 	//Xu ly events
 	switch(i){
@@ -386,7 +451,9 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 			processEvent_8(nList,event.code);
 		}break;
 	case 9:
-			processEvent_9(nList,ninjaid);break;
+		processEvent_9(nList,ninjaid);break;
+	case 10:
+		processEvent_10(nList,ninjaid);break;
 	}
 
 	//
