@@ -367,6 +367,39 @@ void processEvent_10(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
 
 }
 
+
+void processEvent_11(L1List<NinjaID_t>& ninjaid,char* eventcode){
+	L1Item<NinjaID_t>* pID = ninjaid.getHead();
+	L1List<NinjaID_t> LowerID;
+	L1Item<NinjaID_t>* temp_lid = LowerID.getHead();
+	char *ID = getID(eventcode);
+	char resultID[10] ="-1";
+	// tim cac ID nho hon ID duoc truyen vao
+	while(pID){
+		if(strcmp(ID,pID->data.ID)>0){
+			 temp_lid = LowerID.pushBack(pID->data, temp_lid);
+		}
+		pID = pID->pNext;
+	}
+	//tim max trong nhung id nho hon ID
+	if(LowerID.getHead() != NULL){
+		strncpy(resultID,LowerID.getHead()->data.ID,strlen(LowerID.getHead()->data.ID));// khoi tao result la ID dau cua list
+		resultID[strlen(LowerID.getHead()->data.ID)] ='\0';
+	}
+	temp_lid = LowerID.getHead();
+	while(temp_lid){
+		if(strcmp(temp_lid->data.ID,resultID)>0){
+			strncpy(resultID,temp_lid->data.ID,strlen(temp_lid->data.ID));
+			resultID[strlen(temp_lid->data.ID)] ='\0';
+		}
+		temp_lid = temp_lid->pNext;
+	}
+	//xuat ket qua
+	if(strcmp(resultID,"-1") == 0) cout << "-2" <<endl;
+	else cout << "11: " << resultID << endl;
+}
+
+
 bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData)  {
 
     // TODO: Your code comes here
@@ -405,17 +438,20 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 
 	if(strlen(event.code) == 1){
 		strncpy(s,event.code,1);
+		s[1] = '\0';
 		i = atoi(s);
 	}
 	else if(strlen(event.code) == 2){
 		strncpy(s,event.code,2);
+		s[2] = '\0';
 		i = atoi(s);
 	}
 	else{
 		checkEvent(event.code,s);
+		s[strlen(s)] = '\0';
 		i = atoi(s);
 	}
-	delete s; s = NULL;
+
 
 	//Xu ly events
 	switch(i){
@@ -454,6 +490,11 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		processEvent_9(nList,ninjaid);break;
 	case 10:
 		processEvent_10(nList,ninjaid);break;
+	case 11:
+		if(!checkID(getID(event.code),ninjaid)) cout << "-1" <<endl;
+		else{
+			processEvent_11(ninjaid,event.code);
+		}break;
 	}
 
 	//

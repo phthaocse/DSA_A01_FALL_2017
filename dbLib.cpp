@@ -104,6 +104,7 @@ void process(L1List<ninjaEvent_t>& eventList, L1List<NinjaInfo_t>& bList) {
 bool initNinjaGlobalData(void** pGData) {
       /// TODO: You should define this function if you would like to use some extra data
       /// the data should be allocated and pass the address into pGData
+	return true;
   }
 
 void releaseNinjaGlobalData(void* pGData) {
