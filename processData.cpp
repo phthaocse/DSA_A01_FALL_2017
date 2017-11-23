@@ -10,6 +10,7 @@
 #include<cmath>
 #define ID_MAX_LENGTH   10
 
+
 typedef struct NinjaID{
 	char ID[ID_MAX_LENGTH];
 	 NinjaID(char* str) {
@@ -52,7 +53,7 @@ char* getID(char* events){
 
 // return true if distance>5
 bool checkDistance(double lat1d, double lon1d, double lat2d, double lon2d){
-	if((distanceEarth(lat1d, lon1d, lat2d,  lon2d)*1000)>5)return true; // don vi km->m
+	if(fabs(distanceEarth(lat1d, lon1d, lat2d,  lon2d)*1000) > 5)return true; // don vi km->m
 	else return false;
 }
 
@@ -87,7 +88,6 @@ bool findID(L1Item<NinjaInfo_t>* nListHead, char* id,L1Item<NinjaInfo_t>*& pResu
 		}
 		pHead_info = pHead_info->pNext;
 	}
-	pResult = pHead_info;
 	return false;
 }
 
@@ -95,11 +95,11 @@ L1List<NinjaInfo_t> createListID(L1List<NinjaInfo_t>&  nList, char*ID)
 {
 	L1List<NinjaInfo_t> ListID;
 	L1Item<NinjaInfo_t>* pInfo = nList.getHead();
-	if(findID(pInfo,ID,pInfo)){
-		ListID.push_back(pInfo->data);
-	}
-	while(findID(pInfo->pNext,ID,pInfo)){
-		ListID.push_back(pInfo->data);
+	L1Item<NinjaInfo_t>* pResult;
+
+	while(findID(pInfo,ID,pResult)){
+		ListID.push_back(pResult->data);
+		pInfo = pResult->pNext;
 	}
 	return ListID;
 }
@@ -110,19 +110,17 @@ bool findNextStop(L1Item<NinjaInfo_t>* pID,L1Item<NinjaInfo_t>*& pResult ){
 	L1Item<NinjaInfo_t>* p1 = pID;
 	L1Item<NinjaInfo_t>* p2 = pID->pNext;
 	bool b = true;
-	while(b)
-	{
-		if(p1 == NULL || p2 ==NULL){ b = false;}
-		else if(checkDistance(p1->data.latitude,p1->data.longitude,p2->data.latitude,p2->data.longitude)){
-			p1 = p1->pNext;
+	while(p2 != NULL){
+		if(checkDistance(p1->data.latitude,p1->data.longitude,p2->data.latitude,p2->data.longitude)){
+			p1 = p2;
 			p2 = p2->pNext;
 		}
 		else{
-			pResult = p2;
-			b = false;
+			pResult = p1;
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -131,20 +129,68 @@ bool findNextMove(L1Item<NinjaInfo_t>* pID_stop,L1Item<NinjaInfo_t>*& pResult ){
 	L1Item<NinjaInfo_t>* p1 = pID_stop;// diem dang dung
 	L1Item<NinjaInfo_t>* p2 = pID_stop->pNext;
 	bool b = true;
-	while(b)
-	{
-		if(p1 == NULL || p2 ==NULL){ b = false;}
-		else if(!checkDistance(p1->data.latitude,p1->data.longitude,p2->data.latitude,p2->data.longitude)){
+	while(p2 != NULL){
+		if(!checkDistance(p1->data.latitude,p1->data.longitude,p2->data.latitude,p2->data.longitude)){
 			p2 = p2->pNext;
 		}
 		else{
 			pResult = p2;
+			return true;
+		}
+	}
+	return false;
+}
+
+// ket qua dc luu la vi tri lan cuoi dung lai truoc khi di chuyen
+bool findLastStop(L1Item<NinjaInfo_t>* pID_stop,L1Item<NinjaInfo_t>*& pResult ){
+	if(pID_stop == NULL) return false;
+	L1Item<NinjaInfo_t>* p1 = pID_stop;// diem dang dung
+	L1Item<NinjaInfo_t>* p2 = pID_stop->pNext;
+	L1Item<NinjaInfo_t>* temp;
+	bool b = true;
+	while(b)
+	{
+		if(p1 == NULL || p2 ==NULL){ b = false;}
+		else if(!checkDistance(p1->data.latitude,p1->data.longitude,p2->data.latitude,p2->data.longitude)){
+			temp = p2;
+			p2 = p2->pNext;
+		}
+		else{
+			pResult = temp;
 			b = false;
 			return true;
 		}
 	}
 	return false;
 }
+
+double stopTime(L1List<NinjaInfo_t> listID){
+	if(listID.getHead() == NULL) return 0;
+	L1Item<NinjaInfo_t>* p1 = listID.getHead();
+	L1Item<NinjaInfo_t>* p2;
+	double time;
+	bool status = false; // trang thai false la dang dung yen
+	bool b = true;
+	while(b){
+			if(status){
+				if(findNextStop(p1,p2)){
+						status = false;
+						p1 = p2;
+				}
+				else b = false;
+			}
+			else{
+				if(findLastStop(p1,p2)){
+					time += fabs(difftime(p2->data.timestamp,p1->data.timestamp));
+					status = true;
+					p1 = p2->pNext;
+				}
+				else b = false;
+			}
+	}
+	return time;
+}
+
 
 void processEvent_0(void* pGData){
 	cout <<"0: ";
@@ -184,103 +230,67 @@ void processEvent_4(L1List<NinjaID_t>& ninjaid){
 
 void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 	char *ID = getID(eventcode);
-	L1Item<NinjaInfo_t>* pInfo1;
-	findID(nList.getHead(),ID,pInfo1);// lay con tro khi phat hien ID lan dau
-	L1Item<NinjaInfo_t>* pInfo2;
-	findID(pInfo1->pNext,ID,pInfo2);// lay con tro khi thay ID lan ke tiep
-
-	// neu khoang cach 2 lan duoi 5 tiep tuc tim lan ke tiep xuat hien ID
-	bool b = true;
-	while(b)
-	{
-		if(!checkDistance(pInfo1->data.latitude,pInfo1->data.latitude,pInfo2->data.latitude,pInfo2->data.latitude))
-		{
-			if(!findID(pInfo2->pNext,ID,pInfo2)){cout << "Ninja khong di chuyen";b = false;}
-		}
-		else{
-			char* time = new char();
-			cout << "5: ";
-			strPrintTime(time,pInfo2->data.timestamp);
-			cout << time << endl;
-			b = false;
-		}
+	L1Item<NinjaInfo_t>* pIf1;
+	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
+	pIf1 = ListID.getHead();
+	if(findNextMove(pIf1,pIf1)){
+		char* time = new char();
+		strPrintTime(time,pIf1->data.timestamp);
+		cout <<"5" << ID <<": "<< time <<endl;
 	}
+	else cout << "-2" <<endl;
 
 }
 
 
 void processEvent_6(L1List<NinjaInfo_t>& nList,char* eventcode){
 	char *ID = getID(eventcode);
-	L1Item<NinjaInfo_t>* pIf1;// luon la diem hien tai
-	L1Item<NinjaInfo_t>* pIf2;// luon la diem ke tiep
+	L1Item<NinjaInfo_t>* pStop;// luon la diem dung yen
+	L1Item<NinjaInfo_t>* pMove;// luon la diem di chuyen
 	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
-	 pIf1 = ListID.getHead();
-
-	// tim lan dau tien ninja di chuyen
-	findNextMove(pIf1,pIf2);
-	pIf1 = pIf2; // gan ve diem hien tai
+	pMove = ListID.getHead();
 
 	L1List<NinjaInfo_t> freezeStt;// List luu cac lan dung lai
-	bool status = true; // trang thai ninja true = dang di chuyen, false = dang dung lai
 	bool b = true;
 	while(b){
-		if(status){
-			if(findNextStop(pIf1,pIf2)){
-				freezeStt.push_back(pIf2->data);
-				status = false;
-				pIf1 = pIf2;
+		if(findNextStop(pMove,pStop)){
+			freezeStt.push_back(pStop->data);
+			if(!findNextMove(pStop,pMove)){
+				b = false;
 			}
-			else b = false;
 		}
-		else{
-			if(findNextMove(pIf1,pIf2)){
-				status = true;
-				pIf1 = pIf2;
-			}
-			else b = false;
-		}
+		else b = false;
 	}
 
 	char* time = new char();
 	cout <<"6: ";
 	strPrintTime(time,freezeStt.getLast()->data.timestamp);
 	cout << time <<endl;
+
 }
 
 
 void processEvent_7(L1List<NinjaInfo_t>& nList,char* eventcode){
 	char *ID = getID(eventcode);
-	L1Item<NinjaInfo_t>* pIf1;// luon la diem hien tai
-	L1Item<NinjaInfo_t>* pIf2;// luon la diem ke tiep
+	L1Item<NinjaInfo_t>* pStop;// luon la diem dung yen
+	L1Item<NinjaInfo_t>* pMove;// luon la diem di chuyen
 	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
-	 pIf1 = ListID.getHead();
-
-	// tim lan dau tien ninja di chuyen
-	findNextMove(pIf1,pIf2);
-	pIf1 = pIf2; // gan ve diem hien tai
+	pMove = ListID.getHead();
 
 	L1List<NinjaInfo_t> freezeStt;// List luu cac lan dung lai
-	bool status = true; // trang thai ninja true = dang di chuyen, false = dang dung lai
 	bool b = true;
 	while(b){
-		if(status){
-			if(findNextStop(pIf1,pIf2)){
-				freezeStt.push_back(pIf2->data);
-				status = false;
-				pIf1 = pIf2;
+		if(findNextStop(pMove,pStop)){
+			freezeStt.push_back(pStop->data);
+			if(!findNextMove(pStop,pMove)){
+				b = false;
 			}
-			else b = false;
 		}
-		else{
-			if(findNextMove(pIf1,pIf2)){
-				status = true;
-				pIf1 = pIf2;
-			}
-			else b = false;
-		}
+		else b = false;
 	}
 	int size = freezeStt.getSize();
-	cout << "7: "<< size <<endl;
+	L1Item<NinjaInfo_t>* p = freezeStt.getHead();
+	cout << "7: "<< size << endl;
 }
 
 void processEvent_8(L1List<NinjaInfo_t>& nList,char* eventcode){
@@ -396,11 +406,40 @@ void processEvent_11(L1List<NinjaID_t>& ninjaid,char* eventcode){
 	}
 	//xuat ket qua
 	if(strcmp(resultID,"-1") == 0) cout << "-2" <<endl;
-	else cout << "11: " << resultID << endl;
+	else cout << "11:" << ID << " " << resultID << endl;
 }
 
+void processEvent_12(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
+	L1Item<NinjaID_t>* pID = ninjaid.getHead();
+	L1List<NinjaInfo_t> maxList;
+	double max_stoptime = 0;
 
-bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData)  {
+	while(pID){
+			L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
+			double stoptime = stopTime(ListID);
+			if(stoptime > max_stoptime){
+				if(maxList.getHead() != NULL) maxList.removeHead();//xoa max lan trc
+				maxList.push_back(ListID.getHead()->data);
+			}
+			else if(stoptime == max_stoptime) maxList.push_back(ListID.getHead()->data);
+			pID = pID->pNext;
+	}
+	//tim max
+	L1Item<NinjaInfo_t>* pML = maxList.getHead();
+	L1Item<NinjaInfo_t>* pMax = pML;//luu node chua ID co thoi gian lau nhat
+
+
+	while(pML->pNext){
+		if(difftime(pMax->data.timestamp,pML->pNext->data.timestamp) < 0){ //end/beginning
+			pMax = pML->pNext;
+		}
+		pML = pML->pNext;
+	}
+
+	cout << "12: " << pMax->data.id <<endl;
+}
+
+bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) {
 
     // TODO: Your code comes here
 	//create List to store ninjaid
@@ -491,10 +530,12 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 	case 10:
 		processEvent_10(nList,ninjaid);break;
 	case 11:
-		if(!checkID(getID(event.code),ninjaid)) cout << "-1" <<endl;
-		else{
+		//if(!checkID(getID(event.code),ninjaid)) cout << "-1" <<endl;
+		//else{
 			processEvent_11(ninjaid,event.code);
-		}break;
+		break;
+	case 12:
+		processEvent_12(nList,ninjaid);break;
 	}
 
 	//
