@@ -346,31 +346,31 @@ void processEvent_10(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
 			L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
 			L1Item<NinjaInfo_t>* pMove = ListID.getHead();
 			L1Item<NinjaInfo_t>* pStop;
-			time_t timeStop;
-			time_t timeMove;
-			double sumStop = 0;//tong thoi gian dung lai
+			L1Item<NinjaInfo_t>* temp = pMove;
+			//time_t timeStop;
+			//time_t timeMove;
+			//double sumStop = 0;//tong thoi gian dung lai
 			double resultTime = 0;
 			//tinh thoi gian cac lan dung lai
 			bool b = true;
 			int k = 0;
 			while(b){
 				if(findNextStop(pMove,pStop)){
-					timeStop = pStop->data.timestamp;
-					k++;
-					if(!findLastStop(pStop,pMove)){
+					resultTime += difftime(pStop->data.timestamp,temp->data.timestamp);
+					if(!findNextMove(pStop,pMove)){
 						b = false;
 					}
-					timeMove = pMove->data.timestamp;
-					sumStop += difftime(timeMove,timeStop);
-					pMove = pMove->pNext;
+					temp = pMove;
+
 				}
-				else b = false;
+				else{
+					//tinh tu lan dung cuoi cung
+					resultTime += difftime(ListID.getLast()->data.timestamp,pMove->data.timestamp );
+					b = false;
+				}
 			}
 
-			resultTime = difftime(ListID.getLast()->data.timestamp,ListID.getHead()->data.timestamp ) - sumStop;
 
-
-			cout <<pID->data.ID << " "<< resultTime << " "<< sumStop << " " << k << endl;
 			if(resultTime>max_time){
 				max_time = resultTime;
 				if(maxList.getHead() != NULL){
@@ -436,32 +436,66 @@ void processEvent_11(L1List<NinjaID_t>& ninjaid,char* eventcode){
 
 void processEvent_12(L1List<NinjaInfo_t>& nList,L1List<NinjaID_t>& ninjaid){
 	L1Item<NinjaID_t>* pID = ninjaid.getHead();
-	L1List<NinjaInfo_t> maxList;
-	double max_stoptime = 0;
-
+	double max_time = 0;
+	L1List<NinjaInfo_t> maxList; // tao list luu tru cac thoi gian max
 	while(pID){
 			L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
-			double stoptime = stopTime(ListID);
-			if(stoptime > max_stoptime){
-				if(maxList.getHead() != NULL) maxList.removeHead();//xoa max lan trc
+			L1Item<NinjaInfo_t>* pMove = ListID.getHead();
+			L1Item<NinjaInfo_t>* pStop;
+			L1Item<NinjaInfo_t>* temp = pMove;
+			//time_t timeStop;
+			//time_t timeMove;
+			//double sumStop = 0;//tong thoi gian dung lai
+			double resultTime = 0;
+			//tinh thoi gian cac lan dung lai
+			bool b = true;
+			int k = 0;
+			while(b){
+				if(findNextStop(pMove,pStop)){
+
+					if(!findNextMove(pStop,pMove)){
+						//tinh tu lan di chuyen cuoi cung
+						resultTime += difftime(ListID.getLast()->data.timestamp,pStop->data.timestamp );
+						b = false;
+					}
+					resultTime += difftime(pMove->data.timestamp,pStop->data.timestamp);
+
+				}
+				else{
+
+					b = false;
+				}
+			}
+
+
+			if(resultTime>max_time){
+				max_time = resultTime;
+				if(maxList.getHead() != NULL){
+					//xoa max lan trc
+					for(int i = 0; i < maxList.getSize();i++){
+						maxList.removeHead();
+					}
+				}
 				maxList.push_back(ListID.getHead()->data);
 			}
-			else if(stoptime == max_stoptime) maxList.push_back(ListID.getHead()->data);
+			else if(resultTime  == max_time) maxList.push_back(ListID.getHead()->data);//neu bang nhau se van push de so sanh thoi gian
 			pID = pID->pNext;
 	}
+
 	//tim max
 	L1Item<NinjaInfo_t>* pML = maxList.getHead();
 	L1Item<NinjaInfo_t>* pMax = pML;//luu node chua ID co thoi gian lau nhat
+	pML = pML->pNext;
 
-
-	while(pML->pNext){
-		if(difftime(pMax->data.timestamp,pML->pNext->data.timestamp) < 0){ //end/beginning
-			pMax = pML->pNext;
+	while(pML){
+		if(difftime(pMax->data.timestamp,pML->data.timestamp) < 0){ //end/beginning
+			pMax = pML;
 		}
 		pML = pML->pNext;
 	}
 
-	cout << "12: " << pMax->data.id <<endl;
+	cout << "12: " << pMax->data.id << endl;
+
 }
 
 bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) {
