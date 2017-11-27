@@ -53,7 +53,7 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		int hh, mm, ss, DD, MM, YYYY;// Luu tru ngay thang nam
 		// phan tach chuoi
 		stringstream input(str1);
-		input >> DD >> strtemp >> MM >> strtemp >> YYYY >> hh >> strtemp >> mm >> strtemp >> ss;
+		input >> MM  >> strtemp >> DD >> strtemp >> YYYY >> hh >> strtemp >> mm >> strtemp >> ss;
 
 		//gan vao tm
 		struct tm tm;
