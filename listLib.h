@@ -12,6 +12,8 @@
 #define A01_LISTLIB_H
 
 #include <string>
+#include <cstring>
+
 using namespace std;
 
 class DSAException {
@@ -25,6 +27,16 @@ public:
 
     int getError() { return _error; }
     string& getErrorText() { return _text; }
+};
+
+#define ID_MAX_LENGTH   10
+
+
+struct NinjaID_t{
+	char ID[ID_MAX_LENGTH];
+	 NinjaID_t(char* str) {
+	   strncpy(ID, str,ID_MAX_LENGTH - 1);
+	}
 };
 
 template <class T>

@@ -30,6 +30,29 @@ void   strPrintTime(char* des, time_t& t) {
     strftime(des, 26, "%Y-%m-%d %H:%M:%S", pTime);
 }
 
+struct gData{
+	L1List<ninjaEvent_t>* headEvent;
+	L1List<NinjaID_t>* headID;
+};
+
+const char* padding(const char* IDcode)
+{
+	if (strlen(IDcode) >= 4) return IDcode;
+	char* tmp = new char[4];
+	tmp[4] = '\0';
+	for (int i = 0; i < 4-strlen(IDcode); i++)
+	{
+		tmp[i] = '0';
+	}
+	for (int i = 0; i < strlen(IDcode); i++)
+	{
+		tmp[i + 4 - strlen(IDcode)] = IDcode[i];
+	}
+	return tmp;
+}
+
+L1List<NinjaID_t> listId;
+
 void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	// TODO: write code to load information from file into db
 	ifstream ifile;
@@ -65,8 +88,9 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		tm.tm_year = YYYY - 1900;
 		tm.tm_isdst = -1;// khong co gio mua he
 		temp1.timestamp = mktime(&tm);
-
-		strcpy(temp1.id,str2.c_str());
+		
+		
+		strcpy(temp1.id,padding(str2.c_str()));
 		temp1.longitude = atof(str3.c_str());//chuyen string thanh char roi chuyen thanh double
 		temp1.latitude = atof(str4.c_str());
 		// push du lieu vao list db
@@ -74,6 +98,20 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		//db.push_back(temp1);
 		i++;
 		//if(i == 100000) break;
+
+		//tao list ID
+
+		L1Item<NinjaID_t>* pHead_id = listId.getHead();// lay con tro head cua list id
+		L1Item<NinjaID_t>* pLast_id = pHead_id;//khoi tao con tro last
+
+		while(pHead_id){
+			if(strcmp(temp1.id,pHead_id->data.ID) == 0) break;
+			pLast_id = pHead_id;
+			pHead_id = pHead_id -> pNext;
+		}
+		NinjaID_t id(temp1.id);
+		pLast_id = listId.pushBack(id,pLast_id);
+
 	}
 	cout << "line: " <<  i <<endl;
 	ifile.close();
@@ -88,9 +126,10 @@ bool parseNinjaInfo(char* pBuf, NinjaInfo_t& nInfo) {
 void process(L1List<ninjaEvent_t>& eventList, L1List<NinjaInfo_t>& bList) {
 	void*   pGData = NULL;
 	initNinjaGlobalData(&pGData);
-	L1List<ninjaEvent_t>* temp = eventList.copyList();
-	pGData = temp;
-
+	gData* tmp = new gData();
+	tmp->headEvent = eventList.copyList();
+	tmp->headID = listId.copyList();
+	pGData = tmp;
     while (!eventList.isEmpty()) {
     	if(!processEvent(eventList[0], bList, pGData))
             cout << eventList[0].code << " is an invalid event\n";
