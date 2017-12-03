@@ -66,7 +66,7 @@ bool checkDistance(double lat1d, double lon1d, double lat2d, double lon2d){
 }
 
 bool checkEvent(char* events, char*& result) {
-	char** chr = new char*[6]{ "5","6","7","8","11","13" };
+	char** chr = new char*[5]{ "5","6","7","8","11" };
 	for (int i = 0; i<4; i++) {
 		char* tmp = new char();
 		tmp[1] = '\0';
@@ -76,7 +76,7 @@ bool checkEvent(char* events, char*& result) {
 			return true;
 		}
 	}
-	for (int j = 4; j<6; j++) {
+	for (int j = 4; j<5; j++) {
 		char* tmp = new char();
 		strncpy(tmp, events, 2);
 		tmp[2] = '\0';
@@ -248,12 +248,17 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 	L1Item<NinjaInfo_t>* pIf1;
 	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
 	pIf1 = ListID.getHead();
-	if(findNextMove(pIf1,pIf1)){
+	if(ListID.getSize() == 1){
 		char* time = new char();
 		strPrintTime(time,pIf1->data.timestamp);
 		cout <<"5" << ID <<": "<< time <<endl;
 	}
-	else cout << "-2" <<endl;
+	else if(findNextMove(pIf1,pIf1)){
+		char* time = new char();
+		strPrintTime(time,pIf1->data.timestamp);
+		cout <<"5" << ID <<": "<< time <<endl;
+	}
+	else cout<<"5" << ID  << ": empty" <<endl;
 
 }
 
@@ -276,11 +281,13 @@ void processEvent_6(L1List<NinjaInfo_t>& nList,char* eventcode){
 		}
 		else b = false;
 	}
-
+	if(freezeStt.getHead() == NULL) cout <<"6" << ID << ": Non-stop" << endl;
+	else{
 	char* time = new char();
 	cout <<"6" << ID << ": ";
 	strPrintTime(time,freezeStt.getLast()->data.timestamp);
 	cout << time <<endl;
+	}
 
 }
 
@@ -458,6 +465,7 @@ void processEvent_11(void* pGData,char* eventcode){
 		temp_lid = temp_lid->pNext;
 	}
 	//xuat ket qua
+
 	if(strcmp(resultID,"-1") == 0) cout << "11" << ID << ":-1" <<endl;
 	else cout << "11" << ID << ": " << resultID << endl;
 }
@@ -593,12 +601,51 @@ void processEvent_14(L1List<NinjaInfo_t>& nList,void* pGData){
 	
 }
 
+bool isValid(char* IDcode)
+{
+
+	if (strlen(IDcode) == 1)
+	{
+		if (strcmp(IDcode, "0") == 0) return true;
+		if (strcmp(IDcode, "1") == 0) return true;
+		if (strcmp(IDcode, "2") == 0) return true;
+		if (strcmp(IDcode, "3") == 0) return true;
+		if (strcmp(IDcode, "4") == 0) return true;
+		if (strcmp(IDcode, "9") == 0) return true;
+	}
+	if (strlen(IDcode) == 2)
+	{
+		if (strcmp(IDcode, "10") == 0) return true;
+		if (strcmp(IDcode, "12") == 0) return true;
+		if (strcmp(IDcode, "14") == 0) return true;
+	}
+	if (strlen(IDcode) >= 3)
+	{
+		//kiem tra neu ky tu dau khong phai so thi return false
+		if(int(IDcode[0]) < 48 || int(IDcode[0])>57){
+			return false;
+		}
+		//kiem tra ky tu dau neu roi vao cac event 1 so thi return false
+		if( IDcode[0] == '0' || IDcode[0] == '2' || IDcode[0] == '3' || IDcode[0] == '4' || IDcode[0] == '9'){
+			return false;
+		}
+		char tmp[2];
+		strncpy(tmp,IDcode,2);
+		tmp[2] = '\0';
+		if(strcmp(tmp,"10") == 0 || strcmp(tmp,"12") == 0 || strcmp(tmp,"14") == 0) return false;
+		if(strcmp(tmp,"11") == 0) return true;
+		if( IDcode[0] == '5' || IDcode[0] == '6' || IDcode[0] == '7' || IDcode[0] == '8' ) return true;
+
+	}
+	return false;
+}
+
 bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) {
 
     // TODO: Your code comes here
 	//create List to store ninjaid
 
-
+	if(isValid(event.code) == false) return false;
 
 	/*L1Item<NinjaID_t>* pHead_id = ninjaid.getHead();// lay con tro head cua list id
 
@@ -663,22 +710,22 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		processEvent_4(pGData); break;
 	case 5:
 		//char* id = getID(event.code);
-		if(!checkID(getID(event.code),pGData)) cout << "-1" <<endl;
+		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
 			processEvent_5(nList,event.code);
 		}break;
 	case 6:
-		if(!checkID(getID(event.code),pGData)) cout << "-1" <<endl;
+		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
 			processEvent_6(nList,event.code);
 		}break;
 	case 7:
-		if(!checkID(getID(event.code),pGData)) cout << "-1" <<endl;
+		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
 			processEvent_7(nList,event.code);
 		}break;
 	case 8:
-		if(!checkID(getID(event.code),pGData)) cout << "-1" <<endl;
+		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
 			processEvent_8(nList,event.code);
 		}break;
@@ -687,11 +734,7 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 	case 10:
 		processEvent_10(nList,pGData);break;
 	case 11:
-		if(!checkID(getID(event.code),pGData)) cout << "-1" <<endl;
-		else{
-			processEvent_11(pGData,event.code);
-		}break;
-
+		processEvent_11(pGData,event.code);break;
 	case 12:
 		processEvent_12(nList,pGData);break;
 	case 14:
