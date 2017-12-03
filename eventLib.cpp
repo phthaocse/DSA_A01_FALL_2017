@@ -23,13 +23,21 @@ void loadEvents(char* fName, L1List<ninjaEvent_t> &eList) {
 	if(ifile.good())
 	{
 		string str;//luu cac phan khong can thiet
+		bool b = true;
 		while(getline(ifile,str))
 		{
 			istringstream ss(str);
 			while( ss >> str){
 				strcpy((temp.code), str.c_str());
-				eList.push_back(temp);
+				if(temp.code[strlen(temp.code)-1] == ';'){
+					temp.code[strlen(temp.code)-1] = '\0';
+					eList.push_back(temp);
+					b =false;
+					break;
+				}
+				else eList.push_back(temp);
 			}
+			if(b == false) break;
 		}
 	}
 	ifile.close();
