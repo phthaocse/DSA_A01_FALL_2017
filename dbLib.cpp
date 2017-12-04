@@ -26,7 +26,7 @@
 using namespace std;
 
 void   strPrintTime(char* des, time_t& t) {
-    tm *pTime = localtime(&t);
+    tm *pTime = gmtime(&t);
     strftime(des, 26, "%Y-%m-%d %H:%M:%S", pTime);
 }
 
@@ -60,9 +60,14 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	string str;//luu cac phan khong can thiet
 	string str1, str2, str3, str4;
 	NinjaInfo temp1;// luu du lieu ninja tam
+
 	getline(ifile, str);//lay dong dau cua file
-	int i = 0;
+
 	L1Item<NinjaInfo_t>* pLast= db.getHead();
+	L1Item<NinjaInfo_t>* tmp = pLast;
+	//L1Item<NinjaInfo_t>* p_tmp;
+	L1Item<NinjaID_t>* pHead_id = listId.getHead();// lay con tro head cua list id
+	L1Item<NinjaID_t>* pLast_id = pHead_id;//khoi tao con tro last
 	while (!ifile.eof())
 	{
 		getline(ifile, str, ',');
@@ -87,7 +92,7 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 		tm.tm_mon = MM - 1;// mont [0,11] nen tru di 1
 		tm.tm_year = YYYY - 1900;
 		tm.tm_isdst = -1;// khong co gio mua he
-		temp1.timestamp = mktime(&tm);
+		temp1.timestamp = timegm(&tm);
 		
 		
 		strcpy(temp1.id,padding(str2.c_str()));
@@ -100,9 +105,8 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 
 		//tao list ID
 
-		L1Item<NinjaID_t>* pHead_id = listId.getHead();// lay con tro head cua list id
-		L1Item<NinjaID_t>* pLast_id = pHead_id;//khoi tao con tro last
 
+		/*
 		while(pHead_id){
 			if(strcmp(temp1.id,pHead_id->data.ID) == 0) break;
 			pLast_id = pHead_id;
@@ -113,11 +117,25 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 			pLast_id = listId.pushBack(id,pLast_id);
 			//cout << id.ID << " " << id.pointer <<endl;
 		}
+		*/
+
+		if(tmp == NULL){
+			NinjaID_t id(temp1.id,pLast);
+			pLast_id = listId.pushBack(id,pLast_id);
+			tmp = pLast;
+		}
+		else if(strcmp(temp1.id,tmp->data.id) != 0){
+			NinjaID_t id(temp1.id,pLast);
+			pLast_id = listId.pushBack(id,pLast_id);
+			tmp = pLast;
+
+
+		}
+
 		//i++;
 		//if(i == 500000) break;
 
 	}
-//cout << "line: " <<  i <<endl;
 	ifile.close();
 }
 

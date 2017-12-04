@@ -222,7 +222,8 @@ void processEvent_0(void* pGData){
 	L1Item<ninjaEvent_t>* pHead = pList->getHead();
 
 	while(pHead){
-		cout << pHead->data.code << " ";
+		if(pHead->pNext == NULL) cout << pHead->data.code;
+		else cout << pHead->data.code << " ";
 		pHead = pHead->pNext;
 	}
 	cout <<endl;
@@ -586,40 +587,55 @@ void processEvent_14(L1List<NinjaInfo_t>& nList,void* pGData){
 	while(pID){
 		L1Item<NinjaInfo_t>* p_1;// luon la diem dung yen
 		L1Item<NinjaInfo_t>* p_2;// luon la diem di chuyen
-		L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID);
+		L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
+		L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
+
 		if(ListID.getSize() >= 2){
 			p_1 = ListID.getHead();
 			p_2 = p_1->pNext;
-			int i = 0;
-			L1List<NinjaInfo_t> point;// List luu cac lan dung lai
+			L1List<NinjaInfo_t> point;
 			L1Item<NinjaInfo_t>* last = point.getHead();
-			last = point.pushBack(p_1->data,last);
-			if(findNextMove(p_1,p_2)){
-				last = point.pushBack(p_2->data,last);
+			if(checkDistance(p_1->data.latitude,p_1->data.longitude,p_2->data.latitude,p_2->data.longitude)){
+				last = point.pushBack(p_1->data,last);
 				p_1 = p_2;
 				p_2 = p_2->pNext;
 			}
-			else break;
+			else{
+				last = point.pushBack(p_1->data,last);
+				p_2 = p_2->pNext;
+				// tim lan di chuyen ke tiep
+				while(p_2){
+					if(checkDistance(p_1->data.latitude,p_1->data.longitude,p_2->data.latitude,p_2->data.longitude)){
+						last = point.pushBack(p_2->data,last);
+						p_1 = p_2;
+						p_2 = p_2->pNext;
+					}
+					else p_2 = p_2->pNext;
+				}
+			}
 			while(p_2){
-				if(checkDistance(p_1->data.latitude,p_1->data.latitude,p_2->data.latitude,p_2->data.longitude)){
-					last = point.pushBack(p_2->data,last);
+				if(checkDistance(p_1->data.latitude,p_1->data.longitude,p_2->data.latitude,p_2->data.longitude)){
+					last = point.pushBack(p_1->data,last);
 					p_1 = p_2;
 					p_2 = p_2->pNext;
 				}
 				else{
 					last = point.pushBack(p_1->data,last);
-					i++;
+					if(findNextMove(p_1,p_2)){
+						last = point.pushBack(p_2->data,last);
+						p_1 = p_2;
+						p_2 = p_2 -> pNext;
+					}
+					else break;
 				}
 			}
 
-
-		}
 			//cout << pID->data.ID << " " << i << endl;
 
 	//
-	//		L1Item<NinjaInfo_t>* p = point.getHead();
-	//		L1Item<NinjaInfo_t>* p2 = p->pNext;
-			/*
+		L1Item<NinjaInfo_t>* p = point.getHead();
+		L1Item<NinjaInfo_t>* p2 = p->pNext;
+
 			bool bol = true;
 			if(p != NULL && p2 != NULL){
 				while(p->pNext){
@@ -636,10 +652,10 @@ void processEvent_14(L1List<NinjaInfo_t>& nList,void* pGData){
 					p2 = p->pNext;
 				}
 			}
-		}*/
+		}
 		pID = pID -> pNext;
 	}
-	//cout << endl;
+	cout << endl;
 	
 }
 
