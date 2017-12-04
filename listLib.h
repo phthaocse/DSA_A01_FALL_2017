@@ -34,8 +34,10 @@ public:
 
 struct NinjaID_t{
 	char ID[ID_MAX_LENGTH];
-	 NinjaID_t(char* str) {
+	void* pointer;
+	NinjaID_t(char* str, void* p) {
 	   strncpy(ID, str,ID_MAX_LENGTH - 1);
+	   pointer = p;
 	}
 };
 

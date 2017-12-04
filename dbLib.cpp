@@ -109,8 +109,9 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 			pHead_id = pHead_id -> pNext;
 		}
 		if(pHead_id == NULL){
-			NinjaID_t id(temp1.id);
+			NinjaID_t id(temp1.id,pLast);
 			pLast_id = listId.pushBack(id,pLast_id);
+			//cout << id.ID << " " << id.pointer <<endl;
 		}
 		//i++;
 		//if(i == 500000) break;
