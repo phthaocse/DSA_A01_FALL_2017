@@ -275,6 +275,7 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 	L1Item<NinjaInfo_t>* pIf1;
 	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
 	pIf1 = ListID.getHead();
+	L1Item<NinjaInfo_t>* tmp = pIf1;
 	if(ListID.getSize() == 1){
 		char* time = new char();
 		strPrintTime(time,pIf1->data.timestamp);
@@ -290,6 +291,7 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 			}
 			else{
 				pIf2 = pIf2->pNext;
+				if(pIf2 == NULL) cout <<"5" << ID <<": empty"<<endl;
 				while(pIf2){
 					if(checkDistance(pIf1->data.latitude,pIf1->data.longitude,pIf2->data.latitude,pIf2->data.longitude)){
 							char* time = new char();
@@ -309,7 +311,7 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 		}
 
 	}
-	//else cout<<"5" << ID  << ": empty" <<endl;
+	//cout<<"5" << ID  << ": empty" <<endl;
 
 }
 
@@ -604,13 +606,14 @@ void processEvent_14(L1List<NinjaInfo_t>& nList,void* pGData){
 	L1List<NinjaID_t>* ninjaid = p->headID;
 	L1Item<NinjaID_t>* pID = ninjaid->getHead();
 	cout << "14: ";
+	int i = 0;
 	while(pID){
 		L1Item<NinjaInfo_t>* p_1;// luon la diem dung yen
 		L1Item<NinjaInfo_t>* p_2;// luon la diem di chuyen
 		L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
 		L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
 
-		if(ListID.getSize() >= 2){
+		if(ListID.getSize() >= 3){
 			p_1 = ListID.getHead();
 			p_2 = p_1->pNext;
 			L1List<NinjaInfo_t> point;
@@ -653,23 +656,27 @@ void processEvent_14(L1List<NinjaInfo_t>& nList,void* pGData){
 			//cout << pID->data.ID << " " << i << endl;
 
 	//
-		L1Item<NinjaInfo_t>* p = point.getHead();
-		L1Item<NinjaInfo_t>* p2 = p->pNext;
-
-			bool bol = true;
-			if(p != NULL && p2 != NULL){
-				while(p->pNext){
-					while(p2){
-						if(!checkDistance(p->data.latitude,p->data.longitude,p2->data.latitude,p2->data.longitude)){
-							cout << pID->data.ID << " ";
-							bol = false;
-							break;
+			if(point.getSize() >= 3){
+				L1Item<NinjaInfo_t>* p = point.getHead();
+				L1Item<NinjaInfo_t>* p2 = p->pNext;
+				L1Item<NinjaInfo_t>* p3 = p2->pNext;
+				bool bol = true;
+				if(p != NULL && p2->pNext != NULL){
+					while(p3){
+						while(p3){
+							if(!checkDistance(p->data.latitude,p->data.longitude,p3->data.latitude,p3->data.longitude)){
+								if(i == 0) cout << pID->data.ID;
+								else cout << " " << pID->data.ID;
+								i++;
+								bol = false;
+								break;
+							}
+							p3 = p3->pNext;
 						}
-						p2 = p2->pNext;
+						if(bol == false) break;
+							p = p->pNext;
+							p3 = p->pNext->pNext;
 					}
-					if(bol == false) break;
-					p = p->pNext;
-					p2 = p->pNext;
 				}
 			}
 		}
