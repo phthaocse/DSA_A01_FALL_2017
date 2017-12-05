@@ -85,6 +85,8 @@ public:
 
     void    reverse();
 
+    void updateSize();
+
     void    traverse(void (*op)(T&)) {
         L1Item<T>   *p = _pHead;
         while (p) {
@@ -185,6 +187,47 @@ int L1List<T>::removeLast() {
     return -1;
 }
 
+template <class T>
+int  L1List<T>::remove(int i){
+	L1Item<T>* trash;
+	if(i == 0){
+	   trash = _pHead;
+	   _pHead = _pHead->pNext;
+	   delete trash;
+	   _size--;
+	   return 0;
+	}
+	// lay con tro trc node co idx i
+	L1Item<T>* p = _pHead;
+	while(i > 1 && p){
+		p = p->pNext;
+		i--;
+	}
+	if(p == NULL) return 0;
+	L1Item<T>* pcur = p->pNext;
+	if(pcur->pNext == NULL){
+		p->pNext = NULL;
+		delete pcur;
+		_size--;
+	}
+	else{
+		p->pNext = pcur->pNext;
+		delete pcur;
+		_size--;
+	}
+	return 0;
+}
+
+template <class T>
+void L1List<T>::updateSize(){
+	L1Item<T>* p = _pHead;
+	int i = 0;
+	while(p){
+		i++;
+		p = p->pNext;
+	}
+	_size = i;
+}
 
 template<class T>
 L1Item<T>* L1List<T>::getLast(){

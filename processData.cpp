@@ -213,6 +213,19 @@ double stopTime(L1List<NinjaInfo_t> listID){
 	return time;
 }
 
+bool deleteID(void* pGData, char* ID){
+	gData* p = (gData*) pGData;
+	L1List<NinjaID_t>* ninjaid = p->headID;
+	L1Item<NinjaID_t>* pID = ninjaid->getHead();
+	int i = 0;
+	while(pID){
+		if(strcmp(pID->data.ID,ID) == 0) break;
+		pID = pID->pNext;
+		i++;
+	}
+	ninjaid->remove(i);
+	return true;
+}
 
 void processEvent_0(void* pGData){
 	cout <<"0: ";
@@ -507,7 +520,14 @@ void processEvent_11(void* pGData,char* eventcode){
 	//xuat ket qua
 
 	if(strcmp(resultID,"-1") == 0) cout << "11" << ID << ":-1" <<endl;
-	else cout << "11" << ID << ": " << resultID << endl;
+	else{
+		cout << "11" << ID << ": " << resultID << endl;
+		// delete ID
+		deleteID(pGData,resultID);
+	}
+
+
+
 }
 
 void processEvent_12(L1List<NinjaInfo_t>& nList,void* pGData){

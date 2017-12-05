@@ -71,6 +71,7 @@ void loadNinjaDB(char* fName, L1List<NinjaInfo_t> &db) {
 	while (!ifile.eof())
 	{
 		getline(ifile, str, ',');
+		if(str.empty()) continue;
 		getline(ifile, str1, ',');
 		getline(ifile, str2, ',');
 		getline(ifile, str3, ',');
