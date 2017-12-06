@@ -22,7 +22,7 @@ int main(int narg, char** argv) {
     loadEvents(argv[1], eventList);
     loadNinjaDB(argv[2], db);
 
-    cout << fixed << setprecision(20);// preset for floating point numbers
+    cout << fixed << setprecision(12);// preset for floating point numbers
 
 
 

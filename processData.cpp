@@ -66,7 +66,7 @@ bool checkDistance(double lat1d, double lon1d, double lat2d, double lon2d){
 }
 
 bool checkEvent(char* events, char*& result) {
-	char** chr = new char*[5]{ "5","6","7","8","11" };
+	char** chr = new char*[6]{ "5","6","7","8","11","13" };
 	for (int i = 0; i<4; i++) {
 		char* tmp = new char();
 		tmp[1] = '\0';
@@ -76,7 +76,7 @@ bool checkEvent(char* events, char*& result) {
 			return true;
 		}
 	}
-	for (int j = 4; j<5; j++) {
+	for (int j = 4; j<6; j++) {
 		char* tmp = new char();
 		strncpy(tmp, events, 2);
 		tmp[2] = '\0';
@@ -467,8 +467,12 @@ void processEvent_10(L1List<NinjaInfo_t>& nList,void* pGData){
 	while(pID){
 			L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
 			L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
+			if(ListID.getSize() < 2){
+				pID = pID->pNext;
+				continue;
+			}
 			L1Item<NinjaInfo_t>* pMove = ListID.getHead();
-			L1Item<NinjaInfo_t>* pStop;
+			L1Item<NinjaInfo_t>* pStop = pMove->pNext;
 			L1Item<NinjaInfo_t>* temp = pMove;
 			//time_t timeStop;
 			//time_t timeMove;
@@ -476,6 +480,17 @@ void processEvent_10(L1List<NinjaInfo_t>& nList,void* pGData){
 			double resultTime = 0;
 			//tinh thoi gian cac lan dung lai
 			bool b = true;
+
+			if(!checkDistance(pMove->data.latitude,pMove->data.longitude,pStop->data.latitude,pStop->data.longitude)){
+				pStop = pMove;
+				if(findLastStop(pStop,pMove)){
+					temp = pMove;
+					pMove = pMove->pNext;
+				}
+				else{
+					b = false;
+				}
+			}
 
 			while(b){
 				if(findNextStop(pMove,pStop)){
@@ -577,8 +592,12 @@ void processEvent_12(L1List<NinjaInfo_t>& nList,void* pGData){
 	while(pID){
 			L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
 			L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
+			if(ListID.getSize() < 2){
+				pID = pID->pNext;
+				continue;
+			}
 			L1Item<NinjaInfo_t>* pMove = ListID.getHead();
-			L1Item<NinjaInfo_t>* pStop;
+			L1Item<NinjaInfo_t>* pStop = pMove->pNext;
 			L1Item<NinjaInfo_t>* temp = pMove;
 			//time_t timeStop;
 			//time_t timeMove;
@@ -586,6 +605,18 @@ void processEvent_12(L1List<NinjaInfo_t>& nList,void* pGData){
 			double resultTime = 0;
 			//tinh thoi gian cac lan dung lai
 			bool b = true;
+
+			if(!checkDistance(pMove->data.latitude,pMove->data.longitude,pStop->data.latitude,pStop->data.longitude)){
+				pStop = pMove;
+				if(findLastStop(pStop,pMove)){
+					resultTime += difftime(pStop->data.timestamp,pMove->data.timestamp);
+					pMove = pMove->pNext;
+				}
+				else{
+					resultTime = difftime(pStop->data.timestamp,ListID.getLast()->data.timestamp);
+					b = false;
+				}
+			}
 
 			while(b){
 				if(findNextStop(pMove,pStop)){
@@ -754,7 +785,7 @@ bool isValid(char* IDcode)
 		strncpy(tmp,IDcode,2);
 		tmp[2] = '\0';
 		if(strcmp(tmp,"10") == 0 || strcmp(tmp,"12") == 0 || strcmp(tmp,"14") == 0) return false;
-		if(strcmp(tmp,"11") == 0) return true;
+		if(strcmp(tmp,"11") == 0 || strcmp(tmp,"13") == 0) return true;
 		if( IDcode[0] == '5' || IDcode[0] == '6' || IDcode[0] == '7' || IDcode[0] == '8' ) return true;
 
 	}
@@ -816,7 +847,6 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		i = atoi(s);
 	}
 
-
 	//Xu ly events
 	switch(i){
 	case 0:
@@ -858,8 +888,10 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		processEvent_11(pGData,event.code);break;
 	case 12:
 		processEvent_12(nList,pGData);break;
+	case 13: return true;
 	case 14:
 		processEvent_14(nList,pGData);break;
+	default: return false;
 	}
 
 	//
