@@ -270,10 +270,19 @@ void processEvent_4(void* pGData){
 	cout <<"4: "<<max<<endl;
 }
 
-void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
+void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode, void* pGData){
 	char *ID = getID(eventcode);
 	L1Item<NinjaInfo_t>* pIf1;
-	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
+	gData* p = (gData*) pGData;
+	L1List<NinjaID_t>* ninjaid = p->headID;
+	L1Item<NinjaID_t>* pID = ninjaid->getHead();
+	while(pID){
+		if(strcmp(pID->data.ID,ID) == 0)break;
+		pID = pID->pNext;
+	}
+
+	L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
+	L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
 	pIf1 = ListID.getHead();
 	L1Item<NinjaInfo_t>* tmp = pIf1;
 	if(ListID.getSize() == 1){
@@ -316,11 +325,20 @@ void processEvent_5(L1List<NinjaInfo_t>& nList,char* eventcode){
 }
 
 
-void processEvent_6(L1List<NinjaInfo_t>& nList,char* eventcode){
+void processEvent_6(L1List<NinjaInfo_t>& nList,char* eventcode, void* pGData){
 	char *ID = getID(eventcode);
 	L1Item<NinjaInfo_t>* pStop;// luon la diem dung yen
 	L1Item<NinjaInfo_t>* pMove;// luon la diem di chuyen
-	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
+	gData* p = (gData*) pGData;
+	L1List<NinjaID_t>* ninjaid = p->headID;
+	L1Item<NinjaID_t>* pID = ninjaid->getHead();
+	while(pID){
+		if(strcmp(pID->data.ID,ID) == 0)break;
+		pID = pID->pNext;
+	}
+
+	L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
+	L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
 	pMove = ListID.getHead();
 
 	L1List<NinjaInfo_t> freezeStt;// List luu cac lan dung lai
@@ -345,11 +363,20 @@ void processEvent_6(L1List<NinjaInfo_t>& nList,char* eventcode){
 }
 
 
-void processEvent_7(L1List<NinjaInfo_t>& nList,char* eventcode){
+void processEvent_7(L1List<NinjaInfo_t>& nList,char* eventcode, void* pGData){
 	char *ID = getID(eventcode);
 	L1Item<NinjaInfo_t>* pStop;// luon la diem dung yen
 	L1Item<NinjaInfo_t>* pMove;// luon la diem di chuyen
-	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
+	gData* p = (gData*) pGData;
+	L1List<NinjaID_t>* ninjaid = p->headID;
+	L1Item<NinjaID_t>* pID = ninjaid->getHead();
+	while(pID){
+		if(strcmp(pID->data.ID,ID) == 0)break;
+		pID = pID->pNext;
+	}
+
+	L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
+	L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
 	pMove = ListID.getHead();
 
 	L1List<NinjaInfo_t> freezeStt;// List luu cac lan dung lai
@@ -364,13 +391,22 @@ void processEvent_7(L1List<NinjaInfo_t>& nList,char* eventcode){
 		else b = false;
 	} 
 	int size = freezeStt.getSize();
-	L1Item<NinjaInfo_t>* p = freezeStt.getHead();
+
 	cout << "7"<< ID << ": " << size << endl;
 }
 
-void processEvent_8(L1List<NinjaInfo_t>& nList,char* eventcode){
+void processEvent_8(L1List<NinjaInfo_t>& nList,void* pGData,char* eventcode){
 	char *ID = getID(eventcode);
-	L1List<NinjaInfo_t> ListID = createListID(nList,ID);
+	gData* p = (gData*) pGData;
+	L1List<NinjaID_t>* ninjaid = p->headID;
+	L1Item<NinjaID_t>* pID = ninjaid->getHead();
+	while(pID){
+		if(strcmp(pID->data.ID,ID) == 0)break;
+		pID = pID->pNext;
+	}
+
+	L1Item<NinjaInfo_t>* ptmp = (L1Item<NinjaInfo_t>*) pID->data.pointer;
+	L1List<NinjaInfo_t> ListID = createListID(nList,pID->data.ID,ptmp);
 	L1Item<NinjaInfo_t>* pInfo = ListID.getHead();
 	double distance = 0;
 	while(pInfo->pNext){
@@ -797,22 +833,22 @@ bool processEvent(ninjaEvent_t& event, L1List<NinjaInfo_t>& nList,void* pGData) 
 		//char* id = getID(event.code);
 		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
-			processEvent_5(nList,event.code);
+			processEvent_5(nList,event.code,pGData);
 		}break;
 	case 6:
 		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
-			processEvent_6(nList,event.code);
+			processEvent_6(nList,event.code,pGData);
 		}break;
 	case 7:
 		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
-			processEvent_7(nList,event.code);
+			processEvent_7(nList,event.code,pGData);
 		}break;
 	case 8:
 		if(!checkID(getID(event.code),pGData)) cout << event.code << ": -1" <<endl;
 		else{
-			processEvent_8(nList,event.code);
+			processEvent_8(nList,pGData,event.code);
 		}break;
 	case 9:
 		processEvent_9(nList,pGData);break;
